@@ -52,9 +52,9 @@ function InitHashKeys() {
 
 function InitSq120To64() {
 	var index = 0;
-	var file = FILES.FILE_A;
-	var rank = RANKS.RANK_1;
-	var sq = SQUARES.A1;
+	var file = FILES.FA;
+	var rank = RANKS.R1;
+	var sq120 = SQUARES.A1;
 	var sq64 = 0;
 
 	// reset arrays first
@@ -65,27 +65,24 @@ function InitSq120To64() {
 		Sq64ToSq120[index] = 120;
 	}
 
-	for (rank = RANKS.RANK_1; rank < RANKS.RANK_8; ++rank) {
-		for (file = FILES.FILES_A; file < FILES.FILE_H; ++file) {
+	for (rank = RANKS.R1; rank <= RANKS.R8; ++rank) {
+		for (file = FILES.FA; file <= FILES.FH; ++file) {
 			// get sq120 index at current file,rank:
-			sq = FR2SQ(file,rank);
-
+			sq120 = FR2SQ(file,rank);
 			// store array
-			Sq64ToSq120[sq64] = sq;
-			Sq120ToSq64[sq] = sq64;
-
+			Sq64ToSq120[sq64] = sq120;
+			Sq120ToSq64[sq120] = sq64;
 			// new sq64 index at next file,rank:
 			sq64++;
+
 		}
 	}
 }
 
 function init() {
-	
 	console.log("init called.");
 	InitFilesRanksBrd();
 	InitHashKeys();
-
-
+	InitSq120To64();
 }
 

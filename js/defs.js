@@ -68,7 +68,6 @@ var Sq64ToSq120 = new Array(64);
 function RAND_32() {
 	return (Math.floor((Math.random()*255)+1) << 23) | (Math.floor((Math.random()*255)+1) << 16)
 			| (Math.floor((Math.random()*255)+1)<< 8) | Math.floor((Math.random()*255)+1);
-
 }
 
 function SQ64(sq120) {
@@ -78,3 +77,12 @@ function SQ64(sq120) {
 function SQ120(sq64) {
 	return Sq64ToSq120[sq64];
 }
+
+// returns the index for pList(index) for a given piece in PIECES and the piece index number.
+// piece: 		piece enum from PIECES
+// piece_id: 	0-9, max of 10 pieces of each type reserved
+// returns 		index of pList to give the square the piece is on
+function PCEINDEX(piece, piece_id) {
+	return (piece*10 + piece_id);
+}
+

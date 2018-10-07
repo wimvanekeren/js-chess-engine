@@ -1,24 +1,17 @@
-function PCEINDEX(piece, piece_id) {
-	// piece: 		piece enum from PIECES
-	// piece_id: 	0-9, max of 10 pieces of each type reserved
-	// returns 		index of pList to give the square the piece is on
-	return (piece * 10 + piece_id)
-}
 
 var GameBoard = {};
 
-GameBoard.pieces = new Array(BRD_SQ_NUM);
+GameBoard.pieces = new Array(BRD_SQ_NUM); // represents our current board with piece type on each square
 GameBoard.side = COLOURS.WHITE;
 GameBoard.fiftyMove = 0;
 GameBoard.hisPly = 0;
 GameBoard.ply = 0
 GameBoard.enPas = 0; // en passant rule
 GameBoard.castlePerm = 0;
-GameBoard.material  = new Array(2); // ?
+GameBoard.material  = new Array(2); // material value of each colour
 GameBoard.pceNum = new Array(13); // number of pieces of each type, indexed by Pce
-GameBoard.pList = new Array(14 * 10); // square each piece is on
+GameBoard.pList = new Array(14 * 10); // square120 each piece is on
 GameBoard.posKey = 0; // represents position on the board
-
 GameBoard.moveList = new Array(MAXDEPTH * MAXPOSITIONMOVES);
 GameBoard.moveScores = new Array(MAXDEPTH * MAXPOSITIONMOVES);
 GameBoard.moveListStart = new Array(MAXDEPTH);
@@ -101,9 +94,6 @@ function ResetBoard() {
 	for(index = 0; index < BRD_SQ_NUM; ++index) {
 		GameBoard.pieces[index] = SQUARES.OFFBOARD;
 	}
-	for(index = 0; index < 64; ++index) {
-		GameBoard.pieces[SQ120(index)] = PIECES.EMPTY;
-	}
 
 	for(index = 0; index < 14*120; ++index) {
 		GameBoard.pList[index] = PIECES.EMPTY;
@@ -115,8 +105,11 @@ function ResetBoard() {
 	for (index = 0; index < 13; ++index) {
 		GameBoard.pceNum[index] = 0;
 	}
-}
 
+	for (index = 0; index < 64; ++index) {
+		GameBoard.pieces[SQ120(index)] = PIECES.EMPTY;
+	}
+}
 
 // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 function ParseFen(fen) {
@@ -134,7 +127,7 @@ function ParseFen(fen) {
 
 	while ((rank >= RANKS.R1) && fenCnt < fen.length) {
 		count = 1;
-
+		
 		switch (fen[fenCnt]) {
 			case 'p': piece = PIECES.bP; break;
 			case 'r': piece = PIECES.bR; break;
@@ -169,8 +162,6 @@ function ParseFen(fen) {
 				console.log("FEN error");
 				return;
 		}
-
-
 		for (i=0; i < count; i++) {
 			sq120 = FR2SQ(file,rank);
 			GameBoard.pieces[sq120] = piece;
@@ -212,14 +203,64 @@ function ParseFen(fen) {
         GameBoard.enPas = FR2SQ(file, rank);
     }
     GameBoard.posKey = GeneratePosKey();
-    // UpdateListsMaterial();
-    // GameBoard.sqAttacked(21, 0);
 
+    UpdateListsMaterial();
+    PrintPieceLists();
 
+    // GameBoard.sqAttacked(21, 0); 
+}
 
+function PrintPieceLists() {
+	var piece, piece_id;
+
+	for (piece = PIECES.EMPTY; piece <= PIECES.bK; ++piece)
+	{
+		for (piece_id = 0; piece_id < GameBoard.pceNum[piece]; ++piece_id) {
+			console.log('Piece ' + PceChar[piece] + ' on ' + PrSq(GameBoard.pList[PCEINDEX(piece,piece_id)]));
+		}
+	}
 }
 
 
+// updates GameBoard.pList using game board in GameBoard.pieces
+function UpdateListsMaterial() {
+
+	var piece, piece_id, sq120, index, colour;
+
+	// reset lists
+	for(index = 0; index < 14*120; ++index) {
+		GameBoard.pList[index] = PIECES.EMPTY;
+	}
+
+	for (index = 0; index < 2; ++index) {
+		GameBoard.material[index] = 0;
+	}
+	for (index = 0; index < 13; ++index) {
+		GameBoard.pceNum[index] = 0;
+	}
+
+	for(index = 0; index < 64; ++index) {
+
+		sq120 = SQ120(index);
+		piece = GameBoard.pieces[sq120];
+		// add the piece to our list
+		if(piece != PIECES.EMPTY) {
+
+			
+    		// add the value to the material value of this colour
+			colour = PieceCol[piece];
+			GameBoard.material[colour] += PieceVal[piece];
+
+			// add the piece to pList by piece and piece_id
+			// new piece_id is the old number of pieces of this type
+			piece_id = GameBoard.pceNum[piece]; 
+
+
+			GameBoard.pList[PCEINDEX(piece,piece_id)] = sq120;
+			GameBoard.pceNum[piece]++;
+		}
+	}	
+}
 
 
 /* 
