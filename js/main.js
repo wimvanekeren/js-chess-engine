@@ -3,6 +3,7 @@ $(function() {
 	console.log("Main Init Called");
 	ParseFen(START_FEN);
 	PrintBoard();
+	console.log(SqAttacked(64,COLOURS.BLACK));
 });
 
 
@@ -59,10 +60,10 @@ function InitSq120To64() {
 
 	// reset arrays first
 	for (index = 0; index < BRD_SQ_NUM; ++index) {
-		Sq120ToSq64[index] = 65;
+		Sq120ToSq64[index] = SQUARES.OFFBOARD;
 	}
 	for (index = 0; index < 64; ++index) {
-		Sq64ToSq120[index] = 120;
+		Sq64ToSq120[index] = SQUARES.OFFBOARD;
 	}
 
 	for (rank = RANKS.R1; rank <= RANKS.R8; ++rank) {

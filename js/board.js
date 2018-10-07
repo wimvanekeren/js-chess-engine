@@ -205,9 +205,6 @@ function ParseFen(fen) {
     GameBoard.posKey = GeneratePosKey();
 
     UpdateListsMaterial();
-    PrintPieceLists();
-
-    // GameBoard.sqAttacked(21, 0); 
 }
 
 function PrintPieceLists() {
@@ -216,7 +213,7 @@ function PrintPieceLists() {
 	for (piece = PIECES.EMPTY; piece <= PIECES.bK; ++piece)
 	{
 		for (piece_id = 0; piece_id < GameBoard.pceNum[piece]; ++piece_id) {
-			console.log('Piece ' + PceChar[piece] + ' on ' + PrSq(GameBoard.pList[PCEINDEX(piece,piece_id)]));
+			console.log('Piece ' + PceChar[piece] + ' on ' + PrintSquare(GameBoard.pList[PCEINDEX(piece,piece_id)]));
 		}
 	}
 }
@@ -260,6 +257,75 @@ function UpdateListsMaterial() {
 			GameBoard.pceNum[piece]++;
 		}
 	}	
+}
+
+function IsOffBoard(sq120) {
+	if (Sq120ToSq64[sq120]===SQUARES.OFFBOARD) {return true;}
+	else {return false;}
+}
+
+// is the sq attacked by side
+function SqAttacked(sq,side) {
+	var piece;
+	var t_sq;
+	var index;
+	console.log("Is " + PrintSquare(sq) + " attacked by " + SideChar[side] + "?");
+
+	var depth;
+	if (side == COLOURS.WHITE) {
+		// PAWN
+		line = "white pawn left/right";
+		if (GameBoard.pieces[sq + MVSQ.DOWNLEFT] === PIECES.wP) {console.log("found: " + line); return true;}
+		if (GameBoard.pieces[sq + MVSQ.DOWNRIGHT] === PIECES.wP) {console.log("found: " + line); return true;}
+	} else {
+		line = "black pawn left/right";
+		if (GameBoard.pieces[sq + MVSQ.UPLEFT] === PIECES.bP) {console.log("found: " + line); return true;}
+		if (GameBoard.pieces[sq + MVSQ.UPRIGHT] === PIECES.bP) {console.log("found: " + line); return true;}
+		
+	}
+
+	// check rook/queen
+	for (idx=0; idx<4; idx++) {
+		dir = MVROCK[idx]
+		for (depth = 1; depth <= 8; depth++) {
+			line = "rook/queen " + depth + ", sq " + PrintSquare(sq+depth*dir);
+			piece = GameBoard.pieces[sq+depth*dir];
+			if (piece===SQUARES.OFFBOARD) {break;}
+			if (PieceRookQueen[piece] && PieceCol[piece]==side) {console.log("found: " + line); return true;}
+			if (piece!==PIECES.EMPTY) {break;}
+		}
+	}
+
+	// check bishop/queen
+	for (idx=0; idx<4; idx++) {
+		dir = MVBISHOP[idx]
+		for (depth = 1; depth <= 8; depth++) {
+			line = "bishop/queen " + depth + ", sq " + PrintSquare(sq+depth*dir);
+			piece = GameBoard.pieces[sq+depth*dir];
+			if (piece===SQUARES.OFFBOARD) {console.log("offboard."); break;}
+			if (PieceBishopQueen[piece] && PieceCol[piece]==side) {console.log("found: " + line); return true;}
+			if (piece!==PIECES.EMPTY) {break;}
+		}
+	}
+
+	// knights moves
+	var index;
+	for (index = 0; index < 8; index++) {
+		line = "knight " + index + ", sq " + PrintSquare(sq+MVKNIGHT[index]);
+		if (GameBoard.pieces[sq+MVKNIGHT[index]]===PIECES.wN) {console.log("found: " + line); return true;}
+	}	
+
+	// king
+	for (idx=0; idx<8; idx++) {
+		dir = MVKING[idx]
+		line = "king, sq " + PrintSquare(sq+dir);
+		piece = GameBoard.pieces[sq+dir];
+		if (piece===SQUARES.OFFBOARD) {break;}
+		if (piece===PIECES.wK) {console.log("found: " + line); return true;}
+		if (piece!==PIECES.EMPTY) {break;}
+	}
+	console.log("no attackers found with colour " + SideChar[side] + ".");
+	return false;
 }
 
 
